@@ -2,7 +2,7 @@ const { Router } = require('express');
 
 const router = Router();
 
-const products = [
+let products = [
     {
       id: "1",
       title: "Shampoo Sólido de Romero",
@@ -106,7 +106,7 @@ const products = [
 
 router.get('/', (req, res) => {
     const limit =req.query.limit;
-    if(!limit || (limit!=="150" && limit!=="160")) res.json({products})
+    if(!limit || (limit!=="150" && limit!=="160")) res.json(products)
     let productFilter = products.filter(producto => producto.price===limit);
     res.json({products: productFilter})
 })
@@ -114,13 +114,31 @@ router.get('/', (req, res) => {
 router.get('/:pid',(req, res) => {
     const pid = req.params.pid
     let product = products.find(item => item.id === pid)
-    if (!product) res.send({ error: "User not found"})
-    else res.send({product})
+    if (!product) res.json({ error: "User not found"})
+    else res.json(product)
 })
 
 router.post('/', (req, res) => {
-    //TODO
-    res.send('POST /users')
+  products.push(req.body)
+  res.status(201).json({status: "succes", mesage:"user created"})
+})
+
+router.put('/:pid', (req, res) => {
+  const {pid}=req.params
+  const idProduct = products.find(u => u.id == pid)
+  if (!idProduct) res.status(404).json({status: "error", message: "User not found"})
+  products[idProduct]=req.body
+  res.status(200).json({status: "succes", message: "User Updated!"})
+})
+
+router.delete('/:pid', (req, res)=>{
+  const { pid } = req.params
+    const currentLength = products.length
+    products = products.filter(u => u.id != pid)
+    if (products.length == currentLength) {
+        return res.status(404).json({ status: "error", message: "User not found"})
+    }
+    res.status(200).json({ status: "success", message: "User deleted!" })
 })
 
 module.exports = router
